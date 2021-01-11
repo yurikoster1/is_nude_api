@@ -1,0 +1,14 @@
+# @author Yuri Koster
+# @version 0.0.1 - GO reverse proxy
+#
+
+server {
+      listen 80;
+      index index.php index.html index.htm;
+      root /usr/share/nginx/html ;
+
+    location ^~ /go {
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_pass http://${GO_PATH}:${GO_PORT}/;
+       }
+    }

@@ -1,0 +1,60 @@
+version: "3.7"
+services:
+
+  #GO
+  go_nude_app:
+    build:
+      context: .
+      dockerfile: ./.docker/go/Dockerfile
+      target: prod
+    image: yurikoster1/hello_go
+    networks:
+      - go_nude_app-network
+    restart: unless-stopped
+    container_name: go_api_app
+    ports:
+      - "8000:8000"
+    labels:
+      yuri.project.name: ${COMPOSE_PROJECT_NAME}
+
+  #NIGNX
+  go_nude_nginx:
+    build:
+      context: .docker/nginx
+      dockerfile: Dockerfile
+    entrypoint: " dockerize -wait http://go_nude_app:8000 -timeout 40s /docker-entrypoint.sh"
+    command: ["nginx", "-g", "daemon off;"]
+    networks:
+      - go_nude_app-network
+    restart: unless-stopped
+    container_name: go_api_nginx
+    tty: true
+    environment:
+      - GO_PATH=go_nude_app
+      - GO_PORT=8000
+    ports:
+      - "8081:80"
+    depends_on:
+      - "go_nude_app"
+    volumes:
+      - ./.docker/nginx/templates:/etc/nginx/templates
+      - ./www:/usr/share/nginx/html
+    labels:
+      yuri.project.name: ${COMPOSE_PROJECT_NAME}
+
+
+networks:
+  go_nude_app-network:
+    driver: bridge
+    labels:
+     yuri.project.name: ${COMPOSE_PROJECT_NAME}
+
+volumes:
+  go_nude_dbdata:
+    driver: local
+    driver_opts:
+        type: none
+        o: bind
+        device: "${PWD}/.docker/mysql/data"
+    labels:
+      yuri.project.name: ${COMPOSE_PROJECT_NAME}
