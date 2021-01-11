@@ -25,6 +25,7 @@ type Image struct {
 var Images []Image
 
 func Greeting(w http.ResponseWriter, req *http.Request){
+	w.Header().Set("Content-Type", "application/json")
 	io.WriteString(w, "{'message': 'Welcome to is nude API', 'version': 1.0}")
 }
 
